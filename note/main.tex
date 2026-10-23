@@ -1,0 +1,989 @@
+% Compile with XeLaTeX, then BibTeX, then XeLaTeX twice.
+% Figures are expected in the folder "figures" (PDF files, names as used below).
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=2.4cm]{geometry}
+
+% ---------- fonts ----------
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage{amsmath}
+\usepackage{unicode-math}
+\setmathfont{STIX Two Math}   % Times-like math; if missing on your system use: \setmathfont{Latin Modern Math}
+
+% ---------- packages ----------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{xurl}
+
+% Image caption config
+\usepackage{caption}
+\captionsetup{
+    font=small,           % Makes caption text smaller than body text
+    labelfont=bf,         % Makes "Figure 1.1" bold
+    textfont=it,          % Makes the actual caption text italic
+    justification=justified, % Use centering - Optional: centers short captions
+    singlelinecheck=false % Optional: keeps left-aligned if it wraps
+}
+
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,filecolor=blue]{hyperref}
+
+\setlength{\parskip}{0.4em}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setcounter{topnumber}{3}
+\setcounter{totalnumber}{4}
+\setlength{\parindent}{0pt}
+\setlist{nosep,leftmargin=1.4em}
+
+% ---------- macros ----------
+\newcommand{\pizero}{\ensuremath{\pi^{0}}}
+\newcommand{\sNN}{\ensuremath{\sqrt{s_{\mathrm{NN}}}}}
+\newcommand{\pT}{\ensuremath{p_{\mathrm{T}}}}
+\newcommand{\nch}{\ensuremath{n_{\mathrm{ch}}}}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\Pmax}{\ensuremath{P(\xi_{\max}>0.7)}}
+
+\title{\textbf{Forward neutral pions and charged particles in proton--oxygen collisions:\\
+a generator-level study with open-source tools}}
+\author{Tejas Rana\\
+\small \href{mailto:ranatejas137@gmail.com}{ranatejas137@gmail.com}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+Cosmic rays start showers of particles in the air.
+To read these showers, we need computer models of the first collision.
+These models disagree with each other close to the beam direction.
+I studied this region with open-source tools.
+First, I reproduced selected forward neutral-pion results of Leitgeb et al.\ for proton--proton collisions.
+Then I extended them to proton--oxygen collisions, at 1~TeV (lab) and at \sNN\,=\,9.62~TeV, the energy of the new LHC run.
+The generators disagree strongly.
+The rate of very energetic pions in p+O differs by a factor of about nine between models.
+The models also disagree on how this rate changes from pp to p+O.
+Finally, I compared six generators with the new ATLAS p+O data.
+My analysis reproduces most of what the ATLAS paper reports for each model.
+This supports my definitions, my frame conventions and my code.
+\end{abstract}
+
+%=====================================================================
+\section{Introduction}
+%=====================================================================
+Cosmic rays are fast particles from space.
+When one of them hits the atmosphere, it starts an air shower.
+Ground detectors see the shower, not the first particle.
+To learn the energy and the type of the first particle, we compare the data with simulations.
+The first collisions decide much of what follows in the shower.
+Their physics is hard to calculate from first principles.
+Hadronic interaction models describe it instead, and they are tuned to collider data, mostly from the LHC \cite{ATLAS:2026po,dEnterria:2011lhc,Albrecht:2026tuning}.
+
+Ground-based gamma-ray telescopes have a related problem.
+They look for Cherenkov light from showers that gamma rays start.
+Cosmic-ray showers are much more numerous.
+Shower shapes remove about 99\,\% of them \cite{Leitgeb:2025prd}.
+The rest is still a large background.
+Leitgeb et al.\ studied this background.
+It comes from collisions that put a large part of the beam energy into the electromagnetic part of the shower \cite{Leitgeb:2025dis}.
+The main case is a single neutral pion with a large share of the energy.
+The pion decays into two photons, and the photons start an electromagnetic cascade \cite{Matthews:2005heitler}.
+The predictions for this background differ strongly between event generators \cite{Leitgeb:2025dis}.
+
+Colliders can test the generators.
+A particle that flies close to the beam direction has a large pseudorapidity $\eta$.
+LHCf measures neutral particles at $\eta>8.4$ \cite{LHCf:2012pi0}.
+ATLAS has now measured charged particles in proton--oxygen (p+O) collisions at \sNN\,=\,9.62~TeV \cite{ATLAS:2026po}.
+This collision is close to the first collision of a cosmic-ray proton with an air nucleus.
+Leitgeb et al.\ studied pp collisions.
+They report that the generators differ more for p+O than for pp.
+A dedicated study of \pizero\ spectra in p+O is left for future work \cite{Leitgeb:2025prd}.
+
+This note documents a short study in the spirit of that work.
+I wanted to learn the tools and the physics from the ground up.
+I used only public software and public data.
+
+\paragraph{Goals.}
+\begin{enumerate}
+  \item[\textbf{G1}] Reproduce selected pp results of Leitgeb et al.\ \cite{Leitgeb:2025prd}.
+  \item[\textbf{G2}] Extend them to p+O collisions, at 1~TeV (lab) and at \sNN\,=\,9.62~TeV.
+  \item[\textbf{G3}] Test my definitions and frame conventions against the ATLAS p+O data \cite{ATLAS:2026po}.
+\end{enumerate}
+
+\paragraph{The short version.}
+\begin{itemize}
+  \item A \pizero\ can only be ``gamma-like'' inside a narrow pseudorapidity window. Simple kinematics gives this window. My formulas are the ones of Leitgeb et al.
+  \item About 96\,\% of the energetic pions lie inside the window. The rest sit just above its upper edge, at very small transverse momentum.
+  \item Only about one inelastic collision in 1000 makes such a pion. Generators disagree on this rate by a factor of 3 to 5 in pp. In p+O at 9.62~TeV the factor is about 9.
+  \item The generators also disagree on whether this rate falls from pp to p+O. At 9.62~TeV the ratio p+O/pp is between 0.48 and 1.01.
+  \item For two generators, replacing oxygen by nitrogen changes the rate by about 5\,\% or less at $\xi>0.5$.
+  \item Against the ATLAS data, Pythia~8 Angantyr describes the $\eta$ distribution within 2\,\%. The model spread and most of the shape differences match the ATLAS paper.
+\end{itemize}
+
+%=====================================================================
+\section{Physics background}
+%=====================================================================
+\subsection{Gamma-like events and the energy fraction}
+Leitgeb et al.\ call a pion ``gamma-like'' if it takes at least 70\,\% of the beam energy \cite{Leitgeb:2025prd}.
+In plain words, almost all of the primary energy then goes into the electromagnetic cascade.
+The shower looks like one started by a gamma ray.
+
+\subsection{Kinematics}
+I use the energy $\sqrt{s}$ of one nucleon pair in the centre-of-mass (CM) frame.
+In the CM frame the two colliding nucleons have equal and opposite momenta.
+The lab frame is the frame in which the target nucleon is at rest.
+It mimics a cosmic-ray proton that hits air at rest.
+The beam energy in the lab frame is
+\begin{equation}
+  E_{\mathrm{beam}}^{\mathrm{lab}} = \frac{s-2m_p^2}{2m_p}\,.
+  \label{eq:ebeam}
+\end{equation}
+Going from the CM frame to the lab frame is a boost along the beam axis:
+\begin{equation}
+  \gamma=\frac{\sqrt{s}}{2m_p},\qquad \beta=\sqrt{1-1/\gamma^{2}},\qquad
+  E^{\mathrm{lab}}=\gamma\left(E^{*}+\beta\,p_z^{*}\right).
+  \label{eq:boost}
+\end{equation}
+The star marks CM-frame quantities.
+The energy fraction of a pion is
+\begin{equation}
+  \xi \equiv \frac{E^{\mathrm{lab}}_{\pizero}}{E^{\mathrm{lab}}_{\mathrm{beam}}}\,.
+  \label{eq:xi}
+\end{equation}
+Table~\ref{tab:systems} lists the systems of this note.
+The equivalent lab energy is $E^{\mathrm{lab}}\approx s/(2m_p)$.
+For example, the ATLAS paper quotes 49~PeV for the p+O run \cite{ATLAS:2026po}.
+
+\paragraph{Pseudorapidity window.}
+Where can a gamma-like pion be?
+Its energy is large, so it must fly close to the beam axis.
+For $E\gg m$, rapidity and pseudorapidity are close.
+A pion with $\xi\geq\xi_{\mathrm{cut}}$ and $\pT<p_{\mathrm{T,max}}$ then has a limited range in the CM frame.
+The upper edge belongs to $\pT\to0$ and the largest possible energy $\sqrt{s}/2$.
+The lower edge belongs to $\xi=\xi_{\mathrm{cut}}$ and $\pT=p_{\mathrm{T,max}}$:
+\begin{equation}
+  \eta_{\max}=\ln\frac{\sqrt{s}}{m_{\pi}},\qquad
+  \eta_{\min}=\ln\frac{\xi_{\mathrm{cut}}\sqrt{s}}{\sqrt{m_{\pi}^{2}+p_{\mathrm{T,max}}^{2}}}\,.
+  \label{eq:window}
+\end{equation}
+Leitgeb et al.\ use $\xi_{\mathrm{cut}}=0.7$ and $p_{\mathrm{T,max}}=1.5$~GeV, and so do I.
+They find this $\pT$ limit with Pythia, EPOS-LHC, QGSJET II-04 and Sibyll \cite{Leitgeb:2025prd}.
+The width of the window does not depend on $\sqrt{s}$:
+\begin{equation}
+  \eta_{\max}-\eta_{\min}=\ln\frac{\sqrt{m_{\pi}^{2}+p_{\mathrm{T,max}}^{2}}}{\xi_{\mathrm{cut}}\,m_{\pi}}\approx 2.77\,.
+  \label{eq:width}
+\end{equation}
+Only the position of the window moves with energy.
+The formulas give $3.0<|\eta|<5.77$ at 43.3~GeV and $8.75<|\eta|<11.5$ at 13.6~TeV, the values of Leitgeb et al.
+
+\paragraph{Low-$\xi$ edge.}
+Leitgeb et al.\ explain the low-energy cutoff of their spectra by pions at rest in the CM frame \cite{Leitgeb:2025prd}.
+If one keeps only pions that fly forward in the CM frame, the lowest lab energy belongs to a pion at rest.
+This gives a sharp edge at
+\begin{equation}
+  \xi_{\min}=\frac{m_{\pi}}{\sqrt{s}}\,.
+  \label{eq:edge}
+\end{equation}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Collision systems used in this note. The equivalent lab energy is $E^{\mathrm{lab}}\approx s/(2m_p)$. The window is computed with Eq.~\eqref{eq:window} for $\xi>0.7$ and $\pT<1.5$~GeV (CM frame).}
+\label{tab:systems}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+System & $\sqrt{s}$ [GeV] & $E^{\mathrm{lab}}$ [eV] & $\eta_{\min}$ & $\eta_{\max}$\\
+\midrule
+p on p at rest, 1~TeV & 43.3 & $1.0\times10^{12}$ & 3.00 & 5.77\\
+pp, 7~TeV & 7000 & $2.6\times10^{16}$ & 8.09 & 10.86\\
+pp, 13~TeV & 13000 & $9.0\times10^{16}$ & 8.71 & 11.48\\
+pp, 13.6~TeV & 13600 & $9.9\times10^{16}$ & 8.75 & 11.52\\
+p+O, 9.62~TeV per nucleon pair & 9620 & $4.9\times10^{16}$ & 8.41 & 11.17\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Hadronic interaction models}
+Table~\ref{tab:models} lists the generators.
+They follow different ideas for the soft strong interaction and for the remnants of the colliding nucleons.
+This is why they disagree in the forward region.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Generators used. All are run through Chromo \cite{Fedynitch:2025chromo}. The ATLAS paper ran the cosmic-ray models through CRMC \cite{Ulrich:2021crmc}.}
+\label{tab:models}
+\begin{tabular}{@{}p{3.1cm}p{6.4cm}p{3.6cm}@{}}
+\toprule
+Model & Main idea & Reference\\
+\midrule
+EPOS-LHC & Parton-based Gribov--Regge theory with collective hadronization & \cite{Pierog:2015epos}\\
+EPOS LHC-R & Revision of EPOS-LHC aimed at the muon puzzle in air showers & \cite{Pierog:2025eposr}\\
+QGSJET II-04 & Pomeron scheme with enhanced diagrams & \cite{Ostapchenko:2011qgsjet}\\
+QGSJET III & Successor of QGSJET II & \cite{Ostapchenko:2024qgsjet3f,Ostapchenko:2024qgsjet3}\\
+Sibyll 2.3d / 2.3e & Minijet and string model made for air showers & \cite{Riehn:2020sibyll}\\
+DPMJET-III 2019.1 & Dual parton model & \cite{Roesler:2000dpmjet,Bopp:2008dpmjet,Fedynitch:2015thesis}\\
+Pythia 8 & Multiparton interactions and Lund strings & \cite{Bierlich:2022pythia}\\
+Pythia 8 Angantyr & Wounded-nucleon extension of Pythia for nuclei & \cite{Bierlich:2018angantyr}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{LHCf and ATLAS}
+\paragraph{LHCf.}
+LHCf has two detectors, 140~m on each side of the ATLAS interaction point.
+The detectors cover $\eta>8.7$ at zero beam crossing angle, and $\eta>8.4$ at the largest angle \cite{LHCf:2012pi0}.
+A \pizero\ is found from its two photons.
+For a very small opening angle $\theta$, the photon-pair mass is
+\begin{equation}
+  m_{\gamma\gamma}^{2}\approx E_{1}E_{2}\,\theta^{2}\,.
+  \label{eq:mgg}
+\end{equation}
+The 7~TeV analysis fits the mass distribution with a signal peak and a smooth background.
+It subtracts the background using sideband regions and corrects for detector effects with iterative Bayesian unfolding \cite{LHCf:2012pi0}.
+LHCf has also measured forward photons at 13~TeV \cite{LHCf:2018photon}.
+
+\paragraph{ATLAS.}
+In July 2025 the LHC collided oxygen nuclei of 3.4~TeV per nucleon with protons of 6.8~TeV.
+ATLAS recorded $634\pm15~\mu\mathrm{b}^{-1}$ and selected 246 million events.
+An event is selected if it has at least one primary charged particle with $\pT>0.5$~GeV and $|\eta|<2.5$.
+The fiducial cross section is $396\pm6\,(\mathrm{exp.})\pm9\,(\mathrm{lumi.})$~mb \cite{ATLAS:2026po}.
+The paper gives four distributions, all per selected event:
+\begin{equation}
+  \frac{1}{N_{\mathrm{ev}}}\frac{\dd N_{\mathrm{ev}}}{\dd\nch},\quad
+  \frac{1}{N_{\mathrm{ev}}}\frac{1}{2\pi\pT}\frac{\dd^{2}N_{\mathrm{ch}}}{\dd\eta\,\dd\pT},\quad
+  \langle\pT\rangle(\nch),\quad
+  \frac{1}{N_{\mathrm{ev}}}\frac{\dd N_{\mathrm{ch}}}{\dd\eta}\,.
+  \label{eq:atlasobs}
+\end{equation}
+The data are corrected for detector effects.
+They can therefore be compared directly with generator predictions at particle level.
+The paper states that the data are an order of magnitude more precise than the differences between models.
+
+%=====================================================================
+\section{Methods}
+%=====================================================================
+\subsection{Plan}
+I worked in five steps, M0 to M4 (Table~\ref{tab:steps}).
+Each step had scripts, expected results and a check before I moved on.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Work steps and their link to the goals.}
+\label{tab:steps}
+\begin{tabular}{@{}llp{8.6cm}@{}}
+\toprule
+Step & Goal & Content\\
+\midrule
+M0 & -- & Install Chromo, check energy--momentum conservation, check that every model runs for pp and p+O.\\
+M1 & G1 & Pseudorapidity window of energetic \pizero\ versus $\sqrt{s}$, with a generator cross-check.\\
+M2 & G1 & Reproduce \pizero\ spectra, the $\eta$ decomposition and the rate of $\xi>0.7$ pions in pp.\\
+M3 & G2 & Repeat for p+O and p+N: 1~TeV (lab) and 9.62~TeV; compare with pp.\\
+M4 & G3 & ATLAS-like analysis at particle level; compare six generators with the HEPData tables.\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Software and computing}
+I used Chromo 0.11.0 \cite{Fedynitch:2025chromo} with Python~3.9, NumPy~2.0 and Matplotlib~3.9.
+Chromo gives one Python interface to all generators.
+Each Fortran generator can be started only once per Python process.
+I therefore run one process per model, seed and system.
+
+Production ran on the KEKCC batch system (LSF).
+Each job used 4 slots and 4 serial processes with different seeds.
+Each process stops after a time limit and saves its histograms.
+In later steps I added a checkpoint every 10 minutes and a hard timeout.
+This was needed because EPOS processes can hang inside one event.
+I do not store events. Each process writes only histograms and counters.
+The scripts and results are in a public GitHub repository (see Code and data availability).
+Table~\ref{tab:stats} gives the event counts.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Number of generated inelastic events (in millions) per model and step. M2: pp at 1~TeV (lab frame); M3: p+O at 1~TeV and at 9.62~TeV; M4: p+O at 9.62~TeV (ATLAS-like analysis). A dash means not run.}
+\label{tab:stats}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Model & M2 & M3, 1~TeV & M3, 9.62~TeV & M4\\
+\midrule
+Sibyll 2.3d & 2.0 & 1.0 & 1.0 & --\\
+Sibyll 2.3e & -- & -- & 1.0 & 4.0\\
+EPOS-LHC & 1.2 & 0.60 & 0.47 & --\\
+EPOS LHC-R & -- & -- & 0.60 & 0.47\\
+QGSJET II-04 & 2.0 & 1.0 & 0.40 & 1.6\\
+QGSJET III & -- & -- & 0.16 & 0.23\\
+Pythia 8 (M2), Pythia 8 forward tune (M2), Angantyr (M3, M4) & 2.0 + 2.0 & 1.0 & 0.40 & 2.4\\
+DPMJET-III 2019.1 & -- & -- & -- & 2.0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Neutral-pion study (M1 to M3)}
+\label{sec:pi0study}
+\paragraph{Stable particles.}
+I keep \pizero\ stable. Each pion is then one entry.
+
+\paragraph{Frames.}
+For pp at 1~TeV I generate events directly in the lab frame, as Leitgeb et al.\ do for their first spectrum.
+For the CM mode I generate in the CM frame and boost to the lab frame with Eq.~\eqref{eq:boost}.
+In pp the beam proton is not known in the CM frame.
+Following Leitgeb et al., I choose the boost direction event by event.
+I take the direction that gives the largest \pizero\ lab energy in that event (``max boost'').
+As a check I also use a fixed direction (``plus'').
+In p+A collisions the proton direction is known, so I always boost along it.
+Chromo takes the energy of a nuclear target per nucleon pair, so \sNN\ is the generator input.
+
+\paragraph{Forward hemisphere.}
+To reproduce the low-$\xi$ edge of Eq.~\eqref{eq:edge}, I keep only pions that fly forward in the CM frame ($p_z^{*}>0$ along the beam).
+In my runs this leaves the event rates and the spectra at $\xi\geq0.1$ unchanged.
+Backward pions cannot reach $\xi\gtrsim0.5$.
+
+\paragraph{Histograms and counters.}
+For each pion I compute $\xi$ and the CM pseudorapidity $|\eta|$.
+I fill a two-dimensional histogram.
+It has 25 bins per decade in $\xi$ and $|\eta|$ bins of width 0.25, plus the two exact window edges.
+For nine thresholds from 0.1 to 0.9, I also count
+(i) the events with at least one pion above the threshold,
+(ii) the pions above the threshold, and
+(iii) those pions inside, below and above the $\eta$ window.
+The event probability $P(\xi_{\max}>\xi_0)$ is the share of inelastic events with at least one such pion.
+For pp, I show $\xi\,\dd N/\dd\xi$ for $L=2~\mathrm{fb^{-1}}$, as Leitgeb et al.\ do.
+The scale factor is $\sigma_{\mathrm{inel}}L$, with $\sigma_{\mathrm{inel}}$ from each model.
+For p+O, I show $\dd N/\dd\ln\xi$ per inelastic event.
+Nuclear cross sections depend strongly on the model, so I do not scale them to a luminosity.
+
+\paragraph{Pythia.}
+Chromo uses Pythia~8 with \texttt{SoftQCD:inelastic = on}.
+I ran the default (Monash) tune and a forward tune.
+The forward tune is the Monash-based set from Fieg et al.\ \cite{Fieg:2024tune}.
+It changes the beam-remnant model: \texttt{dampPopcorn}\,=\,0, \texttt{hardRemnantBaryon}\,=\,on, \texttt{aRemnantBaryon}\,=\,0.68, \texttt{bRemnantBaryon}\,=\,1.22, \texttt{primordialKTsoft}\,=\,0.56, \texttt{primordialKThard}\,=\,1.8, \texttt{halfScaleForKT}\,=\,10, \texttt{halfMassForKT}\,=\,1 and \texttt{primordialKTremnant}\,=\,0.56 (all in the \texttt{BeamRemnants} group).
+The main forward tune of that paper and the ATLAS A3 tune \cite{ATLAS:A3} are not included.
+The ``Pythia~8'' curves are therefore not the same as the Pythia curves of Leitgeb et al.
+
+\subsection{ATLAS-like analysis (M4)}
+\paragraph{Particle definition.}
+ATLAS counts primary charged particles.
+They have a lifetime above 300~ps and come from the collision or from the decay of particles with a lifetime below 30~ps.
+Chromo leaves $K^{0}_{S}$, $K^{0}_{L}$, $\Lambda$, $\Sigma$, $\Xi$ and $\Omega$ undecayed.
+Their daughters are therefore never counted, as in ATLAS.
+Short-lived states such as \pizero\ and $\eta$ are decayed.
+I keep charged $\pi$, $K$, $p$, $e$ and $\mu$.
+The strange baryons $\Sigma^{\pm}$, $\Xi^{-}$, $\Omega^{-}$ are removed, as the ATLAS paper does for its predictions.
+
+\paragraph{Selection and frame.}
+The fiducial region is $\pT>0.5$~GeV and $|\eta|<2.5$ in the ATLAS lab frame.
+An event is selected if it has at least one such particle.
+All distributions are per selected event.
+Chromo places the proton on $+z$ in the CM frame.
+In ATLAS the oxygen beam moves along $+z$.
+The CM frame moves along the proton, with rapidity
+\begin{equation}
+  y_{\mathrm{cm}}=-\tfrac12\ln\frac{6.8}{3.4}=-0.347,\qquad
+  \beta=\tanh y_{\mathrm{cm}}=-\tfrac13\,.
+  \label{eq:ycm}
+\end{equation}
+I flip $z$ and boost: $p_z^{\mathrm{lab}}=\gamma(-p_z^{\mathrm{CM}}+\beta E)$.
+Then $\eta>0$ is the oxygen-going side.
+
+\paragraph{Comparison with data.}
+I fill fine histograms and rebin them to the HEPData bins (Appendix~\ref{app:hepdata}).
+All $\pT$ bin edges of the data lie exactly on my fine grid.
+The acceptance is the share of generated events that pass the selection:
+\begin{equation}
+  A=\frac{N_{\mathrm{sel}}}{N_{\mathrm{gen}}}\,,\qquad \sigma_{\mathrm{fid}}=A\,\sigma_{\mathrm{inel}}\,.
+  \label{eq:acc}
+\end{equation}
+The ATLAS paper quotes $A$ for five models. I use these values as a test of my selection.
+
+\subsection{Uncertainties}
+Model histograms have Poisson errors.
+Event probabilities have binomial errors, $\sqrt{p(1-p)/N}$.
+Ratios of two independent quantities add the relative errors in quadrature.
+The data band is the sum of statistical and systematic uncertainty in quadrature.
+The HEPData record has no covariance matrix, so I do not compute a $\chi^{2}$.
+Instead I report the range of the ratio MC/data.
+I also report the share of bins in which the model lies inside the data band.
+
+\subsection{Checks}
+Table~\ref{tab:checks} lists the checks and their outcome.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Checks of the analysis chain.}
+\label{tab:checks}
+\begin{tabular}{@{}p{4.1cm}p{9.3cm}@{}}
+\toprule
+Check & Outcome\\
+\midrule
+Energy and momentum (M0) & For 1~TeV pp, $\sum E=1000.94$~GeV and $\sum p_z=1000.00$~GeV expected. All four models agree within 0.1~GeV (EPOS-LHC: 1001.03 and 1000.09).\\
+Window formulas (M1) & Reproduce the windows quoted by Leitgeb et al.\ at 43.3~GeV and 13.6~TeV (assertion in the code).\\
+Window against events (M1) & Sibyll 2.3d, $10^{5}$ events, CM-frame energy fraction: 169 of 169 pions inside the window in true rapidity; 167 of 169 in pseudorapidity.\\
+Frame check, pp (M2) & Lab-frame generation against CM frame with fixed boost: $\chi^{2}/\mathrm{ndf}=0.95$ (62 bins).\\
+Frame check, p+O (M3) & Same test for p+O at 1~TeV, Sibyll 2.3d: $\chi^{2}/\mathrm{ndf}=0.95$ (61 bins); $\Pmax$ is $1.01\times10^{-3}$ (lab) and $0.86\times10^{-3}$ (CM), a difference of $1.4\sigma$.\\
+Reproducibility (M3 against M2) & Sibyll 2.3d, pp, 1~TeV: $\Pmax=(8.55\pm0.29)\times10^{-4}$ against $(8.40\pm0.20)\times10^{-4}$.\\
+Sibyll 2.3d against 2.3e & p+O at 9.62~TeV: $(9.86\pm0.31)\times10^{-4}$ against $(10.31\pm0.32)\times10^{-4}$.\\
+Acceptance (M4) & Sibyll 2.3e: 0.9247 against 0.925 quoted. QGSJET II-04: 0.8989 against 0.899 quoted.\\
+Data consistency (M4) & Mean multiplicity 24.98 from the $\eta$ table and 24.93 from the $\pT$ table. The multiplicity table sums to 0.9999.\\
+Orientation (M4) & The three models I tested give more charged particles on the oxygen side, as does the data (mean density 5.06 against 4.93).\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%=====================================================================
+\section{Results and interpretation}
+%=====================================================================
+I asked three questions.
+Can I reproduce the pp results of Leitgeb et al.\ (Sections~\ref{sec:window} and \ref{sec:pp})?
+What changes in p+O (Section~\ref{sec:po})?
+Is my analysis correct when I test it on real p+O data (Section~\ref{sec:atlas})?
+
+\subsection{Where can gamma-like pions be found? (M1)}
+\label{sec:window}
+Figure~\ref{fig:window} shows Eq.~\eqref{eq:window} as a function of $\sqrt{s}$.
+Both edges rise with $\ln\sqrt{s}$ and the width stays at 2.77.
+In plain words, a higher collision energy pushes the gamma-like pions closer to the beam.
+At 13.6~TeV the window is $8.75<\eta<11.52$.
+LHCf covers $\eta>8.4$, so it sees the whole window.
+For p+O at 9.62~TeV the lower edge is 8.41 in the CM frame, right at the LHCf edge.
+
+The LHC frame differs from the CM frame.
+The CM moves with rapidity $-0.347$ along the proton (Eq.~\ref{eq:ycm}).
+On the proton-going side the window shifts by 0.35 units, to about $8.75<|\eta|<11.52$.
+This is my own estimate, and I have not tested it against the LHCf geometry.
+It is the same window as for pp at 13.6~TeV, because the proton energy is half of 13.6~TeV.
+In the LHC frame it would start inside the LHCf acceptance.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.62\textwidth]{figures/m1_eta_window.pdf}
+\caption{Pseudorapidity window of \pizero\ with $\xi>0.7$ and $\pT<1.5$~GeV in the CM frame, as a function of $\sqrt{s}$. The vertical lines mark 1~TeV (lab), p+O at 9.62~TeV and pp at 13.6~TeV. The dashed horizontal line is the approximate LHCf acceptance edge at $\eta\approx8.4$ \cite{LHCf:2012pi0}.}
+\label{fig:window}
+\end{figure}
+
+\subsection{Reproducing the pp results (M2)}
+\label{sec:pp}
+\paragraph{Energy fraction spectrum.}
+Figure~\ref{fig:fig2} shows the \pizero\ spectrum for 1~TeV protons on protons at rest.
+Most pions carry a small share of the beam energy.
+The spectrum has a broad maximum near $\xi\approx2\times10^{-2}$.
+It falls by a factor of about 50 between $\xi=0.1$ and $\xi=0.7$.
+The sharp edge at $\xi=3.1\times10^{-3}$ is Eq.~\eqref{eq:edge}.
+
+All models agree within about 20\,\% below $\xi\approx0.3$.
+This is the region with most pions, and the models are tuned to data there.
+The models separate at high $\xi$, the region that matters for gamma-like events.
+Between $\xi=0.4$ and 0.7, QGSJET II-04 and the Pythia forward tune fall to about half of Sibyll.
+EPOS-LHC is at about 0.7.
+Above $\xi\approx0.75$ the ratios rise for all models, but the statistics are small.
+EPOS-LHC and Pythia (Monash) go well above Sibyll.
+
+LHCf saw a similar split at 7~TeV, for older model versions.
+DPMJET, Pythia and Sibyll gave harder pion spectra than the data, and QGSJET II-03 gave softer ones.
+The authors link this to the popcorn model of baryon--meson production, and to the single quark exchange in QGSJET \cite{LHCf:2012pi0}.
+That paper measured $\pT$ at fixed rapidity, not $\xi$, so the comparison is only a direction.
+My QGSJET II-04 also gives the lowest rate of energetic pions.
+The forward tune of Pythia lowers the high-$\xi$ rate by a factor of 2.4 relative to the default tune (Table~\ref{tab:pp}).
+It changes the remnant and popcorn parameters (Section~\ref{sec:pi0study}).
+A likely reason is that the leading baryon keeps more of the energy.
+I did not test this.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.58\textwidth]{figures/m2_fig2_lab1000_none-fo.pdf}
+\caption{Spectrum of CM-forward \pizero\ for 1~TeV protons on protons at rest, for $L=2~\mathrm{fb^{-1}}$. Top: full range. Middle: zoom to $\xi>0.1$ with statistical errors; the dotted line marks $\xi=0.7$. Bottom: ratio to Sibyll 2.3d. The Pythia forward tune is the Monash-based set described in Section~\ref{sec:pi0study}.}
+\label{fig:fig2}
+\end{figure}
+
+\paragraph{How often does a gamma-like pion appear?}
+Table~\ref{tab:pp} gives the probability that an event has a \pizero\ above a threshold.
+At $\xi>0.7$ the models range from $4.6\times10^{-4}$ (QGSJET II-04) to $1.4\times10^{-3}$ (Pythia, Monash).
+This is a factor of 3.
+In plain words, only about one inelastic collision in 1000 makes such a pion.
+The gamma-ray background comes from this rare class.
+The models disagree most exactly where it matters.
+
+The max-boost choice gives a rate 2.2 times higher than a fixed boost ($1.71\times10^{-3}$ against $7.89\times10^{-4}$ for Sibyll).
+The reason is simple.
+In pp, either proton can be the projectile in the CM frame.
+Taking the better direction doubles the chance of a very energetic pion.
+The fixed-boost rate agrees with the lab-frame rate ($7.89\pm0.28$ against $8.40\pm0.20$, in units of $10^{-4}$).
+Between 43~GeV and 13.6~TeV the rate grows only from $1.71\times10^{-3}$ to $2.16\times10^{-3}$ (max boost).
+So the share of energetic pions changes little over five decades in lab energy.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Probability $P(\xi_{\max}>\xi_0)$ to find at least one \pizero\ above a threshold, per inelastic event, for pp. The last three columns give the share of $\xi>0.7$ pions inside, below and above the $\eta$ window. Errors on $P(0.7)$ are binomial. ``max'' and ``plus'' denote the boost choice.}
+\label{tab:pp}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llccccrrr@{}}
+\toprule
+System & Model & Events [M] & $P(0.1)$ & $P(0.5)$ & $P(0.7)$ [$10^{-4}$] & in & below & above\\
+\midrule
+lab 1~TeV & Sibyll 2.3d & 2.0 & 0.296 & 0.0103 & $8.40\pm0.20$ & 96.5\,\% & 0.2\,\% & 3.3\,\%\\
+lab 1~TeV & EPOS-LHC & 1.2 & 0.321 & 0.00825 & $10.53\pm0.30$ & 94.2\,\% & 2.1\,\% & 3.6\,\%\\
+lab 1~TeV & QGSJET II-04 & 2.0 & 0.291 & 0.00577 & $4.64\pm0.15$ & 88.4\,\% & 0.7\,\% & 11.0\,\%\\
+lab 1~TeV & Pythia 8 (Monash) & 2.0 & 0.339 & 0.00931 & $13.68\pm0.26$ & 92.8\,\% & 0.4\,\% & 6.8\,\%\\
+lab 1~TeV & Pythia 8 (forward) & 2.0 & 0.321 & 0.00564 & $5.64\pm0.17$ & 96.2\,\% & 0.6\,\% & 3.2\,\%\\
+CM 43.3~GeV, max & Sibyll 2.3d & 2.0 & 0.513 & 0.0206 & $17.10\pm0.29$ & 95.9\,\% & 0.1\,\% & 4.0\,\%\\
+CM 43.3~GeV, plus & Sibyll 2.3d & 1.0 & 0.297 & 0.0103 & $7.89\pm0.28$ & 97.2\,\% & 0.0\,\% & 2.8\,\%\\
+CM 13.6~TeV, max & Sibyll 2.3d & 2.0 & 0.459 & 0.0200 & $21.61\pm0.33$ & 96.4\,\% & 0.8\,\% & 2.8\,\%\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Where in pseudorapidity do the pions sit?}
+Figure~\ref{fig:etadec} shows the same spectrum split in $|\eta|$ ranges.
+Pions with $|\eta|<1$ peak at $\xi\approx10^{-2}$.
+Larger $|\eta|$ moves the peak to higher $\xi$.
+The window curve peaks at $\xi\approx0.15$ and equals the total above $\xi\approx0.5$.
+In plain words, the pions with the most energy are the ones closest to the beam.
+A detector that covers the window therefore sees them.
+At 13.6~TeV the picture is the same, with the spectrum reaching down to $\xi\sim10^{-5}$.
+
+About 96\,\% of the pions with $\xi>0.7$ are inside the window (Table~\ref{tab:pp}).
+Leitgeb et al.\ state that the window covers the upper $\xi$ range fully.
+The rest in my samples sit above $\eta_{\max}$.
+This is not a failure of the window.
+Eq.~\eqref{eq:window} is an exact limit in rapidity.
+Pseudorapidity can exceed it when $\pT$ is below about $m_{\pi}$.
+In true rapidity all pions are inside (M1 check).
+QGSJET II-04 has more of these pions (11\,\%).
+It makes more energetic pions at very small $\pT$.
+Below $\eta_{\min}$ the leakage is under 1\,\% for Sibyll, QGSJET and Pythia, and about 2\,\% for EPOS-LHC.
+So the $\pT$ limit of 1.5~GeV is a good choice for these models.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m2_fig3_Sibyll23d_cm43.3394_max-fo.pdf}
+\caption{1~TeV protons on protons ($\sqrt{s}=43.3$~GeV).}
+\label{fig:eta43}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m2_fig3_Sibyll23d_cm13600_max-fo.pdf}
+\caption{pp at 13.6~TeV.}
+\label{fig:eta136}
+\end{subfigure}
+\caption{Spectrum of CM-forward \pizero\ split in $|\eta|$ ranges (Sibyll 2.3d, CM frame, max boost). The turquoise curve is the window of Eq.~\eqref{eq:window}. The blue vertical line marks $\xi=0.7$. Bottom panels: zoom to $\xi>0.3$.}
+\label{fig:etadec}
+\end{figure}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/m2_frames_check.pdf}
+\caption{Frame check for Sibyll 2.3d at 1~TeV. The spectrum from lab-frame generation and from the CM frame with a fixed boost agree ($\chi^{2}/\mathrm{ndf}=0.95$). The max-boost spectrum (black) is shifted to higher $\xi$.}
+\label{fig:frames}
+\end{figure}
+
+\paragraph{Is my boost correct?}
+Figure~\ref{fig:frames} shows that two ways of generating the events give the same spectrum.
+The max-boost spectrum lies above them at high $\xi$, as expected.
+This gives me confidence in Eqs.~\eqref{eq:ebeam} to \eqref{eq:xi} and in my boost code.
+
+\subsection{Extension to p+O (M3)}
+\label{sec:po}
+\paragraph{Spectra at 1~TeV and at 9.62~TeV.}
+Figures~\ref{fig:zoomlab} and \ref{fig:zoomcm} show the high-$\xi$ spectrum for p+O.
+The lower panels show the ratio to Sibyll and the ratio p+O/pp for each model.
+
+At 1~TeV (lab), Sibyll gives the highest rate and QGSJET II-04 the lowest.
+QGSJET is at about 0.4 of Sibyll near $\xi=0.7$.
+EPOS-LHC and Angantyr lie in between.
+For EPOS-LHC, QGSJET II-04 and Angantyr, p+O/pp is 0.7 to 0.8 at $\xi=0.4$ to 0.7.
+For Sibyll it is close to 1.
+
+At 9.62~TeV the spread is larger.
+Relative to Sibyll at $\xi\approx0.7$, QGSJET II-04 is at about 0.1 to 0.2.
+QGSJET III is at 0.3 to 0.4, and the two EPOS versions are at 0.55 to 0.65.
+Sibyll 2.3d and 2.3e lie on top of each other.
+For most models, p+O/pp is 0.7 to 0.8 at $\xi=0.3$ to 0.7.
+EPOS LHC-R is closer to 1 (0.9 to 1.0).
+Below $\xi\approx0.15$ the ratio is close to 1 for all models.
+
+A simple picture explains the sign of the effect.
+In a nuclear target, the projectile can interact with several nucleons.
+It loses energy at each step.
+Fewer pions then reach very high $\xi$.
+The models differ in how much energy the projectile keeps.
+Only forward \pizero\ data in p+O can settle this.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m3_zoom_O16_lab1000_none-fo.pdf}
+\caption{1~TeV proton on oxygen at rest.}
+\label{fig:zoomlab}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m3_zoom_O16_cm9620_plus-fo.pdf}
+\caption{p+O at $\sqrt{s_{\mathrm{NN}}}=9.62$~TeV.}
+\label{fig:zoomcm}
+\end{subfigure}
+\caption{High-$\xi$ spectrum of CM-forward \pizero\ in p+O, per inelastic event. Middle panel: ratio to Sibyll 2.3d. Bottom panel: ratio p+O/pp, with Pythia 8 as the pp reference for Angantyr. The dotted line marks $\xi=0.7$.}
+\label{fig:zoom}
+\end{figure}
+
+\paragraph{Event rates and the ratio p+O/pp.}
+Table~\ref{tab:po} gives the rates for pp and p+O.
+At $\xi>0.7$ and 9.62~TeV, the rate in p+O goes from $1.15\times10^{-4}$ (QGSJET II-04) to $1.03\times10^{-3}$ (Sibyll 2.3e).
+This is a factor of 9.
+In plain words, some generators make an energetic pion in p+O nine times more often than others.
+In pp at the same energy the factor is 4.6 (from $2.40\times10^{-4}$ to $1.10\times10^{-3}$).
+At 1~TeV the spread is about the same for pp (3.2) and for p+O (3.0).
+Leitgeb et al.\ report larger differences for p+O than for pp.
+In my event rates this is clear at 9.62~TeV, but not at 1~TeV.
+
+The ratio p+O/pp tells how a nuclear target changes the rate.
+At 9.62~TeV it is between 0.48 and 1.01 at $\xi>0.7$.
+So the generators do not even agree on the direction of the change.
+At $\xi>0.5$ the ratios are closer, from 0.67 to 0.94, and they are better measured.
+The disagreement is therefore mainly about the very highest $\xi$.
+The single rates of QGSJET II-04, QGSJET III and EPOS have errors of 5 to 15\,\% at $\xi>0.7$, and their ratios up to 19\,\%.
+These models are slow, so their event counts are small (Table~\ref{tab:stats}).
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Probability to find a \pizero\ with $\xi>0.7$ per inelastic event, in units of $10^{-4}$, for pp and p+O, with binomial errors. The ratios are p+O/pp for $\xi>0.7$ and for $\xi>0.5$. For Angantyr, the pp reference is Pythia 8 (Monash).}
+\label{tab:po}
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Energy & Model & pp & p+O & Ratio ($>0.7$) & Ratio ($>0.5$)\\
+\midrule
+1~TeV lab & Sibyll 2.3d & $8.55\pm0.29$ & $9.03\pm0.30$ & $1.06\pm0.05$ & $0.94\pm0.01$\\
+1~TeV lab & EPOS-LHC & $9.72\pm0.31$ & $7.22\pm0.35$ & $0.74\pm0.04$ & $0.77\pm0.01$\\
+1~TeV lab & QGSJET II-04 & $4.42\pm0.21$ & $3.30\pm0.18$ & $0.75\pm0.05$ & $0.79\pm0.02$\\
+1~TeV lab & Pythia / Angantyr & $14.11\pm0.38$ & $9.98\pm0.32$ & $0.71\pm0.03$ & $0.77\pm0.01$\\
+\midrule
+9.62~TeV & Sibyll 2.3d & $10.63\pm0.33$ & $9.86\pm0.31$ & $0.93\pm0.04$ & $0.76\pm0.01$\\
+9.62~TeV & Sibyll 2.3e & $10.18\pm0.32$ & $10.31\pm0.32$ & $1.01\pm0.04$ & $0.79\pm0.01$\\
+9.62~TeV & EPOS-LHC & $8.68\pm0.47$ & $7.28\pm0.39$ & $0.84\pm0.06$ & $0.81\pm0.02$\\
+9.62~TeV & EPOS LHC-R & $7.63\pm0.44$ & $6.98\pm0.34$ & $0.92\pm0.07$ & $0.93\pm0.03$\\
+9.62~TeV & QGSJET II-04 & $2.40\pm0.24$ & $1.15\pm0.17$ & $0.48\pm0.09$ & $0.77\pm0.03$\\
+9.62~TeV & QGSJET III & $6.13\pm0.39$ & $3.56\pm0.47$ & $0.58\pm0.08$ & $0.74\pm0.03$\\
+9.62~TeV & Pythia / Angantyr & $11.01\pm0.33$ & $7.63\pm0.44$ & $0.69\pm0.04$ & $0.67\pm0.02$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Pseudorapidity decomposition in p+O.}
+Figure~\ref{fig:etapo} shows the decomposition for Sibyll 2.3d at 9.62~TeV.
+The pattern is the same as in pp.
+The window of Eq.~\eqref{eq:window}, $8.41<|\eta|<11.17$, contains 95.0\,\% of the pions with $\xi>0.7$.
+For QGSJET II-04 the share is 93.5\,\%, but from only 46 pions.
+The low edge of the spectrum is at $\xi\approx1.4\times10^{-5}$, as Eq.~\eqref{eq:edge} predicts.
+So the idea of a pseudorapidity window carries over from pp to p+O.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/m3_eta_Sibyll23d_O16_cm9620_plus-fo.pdf}
+\caption{Spectrum of CM-forward \pizero\ in p+O at 9.62~TeV, split in $|\eta|$ ranges (Sibyll 2.3d), per inelastic event. The turquoise curve is the window $8.41<|\eta|<11.17$.}
+\label{fig:etapo}
+\end{figure}
+
+\paragraph{Nitrogen against oxygen.}
+Air is about 78\,\% nitrogen and 21\,\% oxygen, but the LHC ran with oxygen.
+Leitgeb et al.\ expect small differences between the two targets, because their mass numbers differ only by two.
+The ATLAS paper finds a cross-section ratio p+N to p+O of about 0.9 in the models \cite{ATLAS:2026po}.
+I asked a different question: does the pion spectrum per event change?
+Figure~\ref{fig:nvo} shows the ratio p+$^{14}$N / p+$^{16}$O for Sibyll 2.3d and QGSJET II-04.
+At 9.62~TeV (right panel), the ratio for Sibyll is $1.00\pm0.02$ over the whole range.
+For QGSJET II-04 it is within about 5\,\% for $\xi<0.45$ and about 0.9 near $\xi=0.5$ to 0.65.
+Above $\xi=0.7$ the errors are too large for a statement.
+At $\xi>0.5$, the event-rate ratios are $1.00\pm0.01$ and $1.02\pm0.02$ for Sibyll (1~TeV, 9.62~TeV), and $1.04\pm0.02$ and $0.95\pm0.04$ for QGSJET II-04.
+In plain words, nitrogen and oxygen give nearly the same energetic-pion spectrum in these two models.
+The difference is about 5\,\%.
+At $\xi>0.7$, QGSJET II-04 gives $0.88\pm0.07$ (1~TeV) and $1.37\pm0.27$ (9.62~TeV), which are statistically weak.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m3_nvo_lab1000_none-fo.pdf}
+\caption{1~TeV.}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m3_nvo_cm9620_plus-fo.pdf}
+\caption{9.62~TeV.}
+\end{subfigure}
+\caption{Ratio of the \pizero\ spectra for p+$^{14}$N and p+$^{16}$O targets.}
+\label{fig:nvo}
+\end{figure}
+
+\subsection{Testing my analysis on the ATLAS p+O data (M4)}
+\label{sec:atlas}
+The \pizero\ spectra of the last section cannot be compared with data yet.
+I therefore tested the rest of my chain on the ATLAS data.
+The particle definition, the frame change and the normalisation are the same kind of steps.
+ATLAS measures at $|\eta|<2.5$, far from the forward window.
+The test checks my method, not the forward physics.
+
+\paragraph{Acceptance and multiplicity.}
+The acceptance $A$ is the share of events that pass the ATLAS selection.
+Table~\ref{tab:acc} compares my values with the ones in the ATLAS paper.
+Sibyll 2.3e and QGSJET II-04 agree to the rounding of the quoted values.
+EPOS LHC-R is 0.4 points lower, DPMJET 1.0 point higher and Pythia Angantyr 2.8 points higher.
+These three differences are most likely due to different generator versions or settings.
+The ATLAS paper used CRMC 2.2.1 and Pythia 8.308, and Chromo has its own versions.
+The agreement for two models supports my selection.
+
+The mean multiplicity per selected event in the data is 24.98.
+Angantyr is $-1.1\,\%$ from it, Sibyll $-6.5\,\%$ and DPMJET $-8.6\,\%$.
+QGSJET III is $+5.3\,\%$, QGSJET II-04 $+25\,\%$ and EPOS LHC-R $-28\,\%$.
+In plain words, the generators put out between 18 and 31 charged particles per event, while the data say 25.
+The spread from EPOS to QGSJET II-04 is a factor of 1.7.
+The ATLAS paper speaks of a model spread of about 50\,\% in $\eta$.
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Fiducial acceptance $A=N_{\mathrm{sel}}/N_{\mathrm{gen}}$ and mean multiplicity per selected event. The ATLAS values for $A$ are those quoted in the paper (no uncertainty given). The data mean is 24.98.}
+\label{tab:acc}
+\begin{tabular}{@{}lrcccc@{}}
+\toprule
+Model & Events [M] & $A$ (this work) & $A$ (ATLAS) & $\langle\nch\rangle$ & vs.\ data\\
+\midrule
+Pythia 8 Angantyr & 2.40 & 0.9188 & 0.891 & 24.71 & $-1.1\,\%$\\
+EPOS LHC-R & 0.47 & 0.8379 & 0.842 & 18.07 & $-27.7\,\%$\\
+DPMJET-III 2019.1 & 2.00 & 0.9694 & 0.959 & 22.84 & $-8.6\,\%$\\
+QGSJET II-04 & 1.60 & 0.8989 & 0.899 & 31.29 & $+25.3\,\%$\\
+QGSJET III & 0.23 & 0.9033 & -- & 26.30 & $+5.3\,\%$\\
+Sibyll 2.3e & 4.00 & 0.9247 & 0.925 & 23.35 & $-6.5\,\%$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Pseudorapidity distribution.}
+Figure~\ref{fig:cmpeta} shows $\dd N_{\mathrm{ch}}/\dd\eta$.
+The data are flat in the centre, with a maximum of $5.2\pm0.1$ near $\eta\approx1.1$ on the oxygen side \cite{ATLAS:2026po}.
+All models reproduce this shape.
+Most of the differences between the models are in the normalisation.
+Angantyr is within 2\,\% of the data over the full range (ratio 0.98 to 1.02).
+In 82\,\% of its bins it is inside the data band.
+QGSJET III is 4 to 9\,\% high.
+DPMJET is 8 to 9\,\% low.
+Sibyll is 2 to 12\,\% low, and its deviation grows towards the oxygen edge.
+QGSJET II-04 is 24 to 27\,\% high and EPOS LHC-R 25 to 29\,\% low.
+
+The ATLAS paper states that Angantyr agrees within uncertainties, Sibyll within 7\,\% and QGSJET III within 10\,\%.
+My results agree for Angantyr and QGSJET III.
+For Sibyll, my deviation reaches 12\,\% at the edge.
+This may come from the generator version.
+The paper also says that the data are flatter than EPOS.
+In my run the shape of EPOS LHC-R follows the data closely (ratio 0.71 to 0.75).
+I cannot explain this difference yet.
+The good Angantyr result is the strongest check of my chain.
+It tests the frame change, the particle definition and the normalisation together.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m4_compare_eta.pdf}
+\caption{Pseudorapidity distribution.}
+\label{fig:cmpeta}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m4_compare_pt.pdf}
+\caption{Transverse-momentum spectrum.}
+\label{fig:cmppt}
+\end{subfigure}
+\caption{ATLAS p+O data at 9.62~TeV (grey band: statistical and systematic uncertainty, added in quadrature) and generator predictions at particle level. Bottom panels: ratio MC/data.}
+\label{fig:cmp1}
+\end{figure}
+
+\paragraph{Transverse-momentum spectrum.}
+Figure~\ref{fig:cmppt} shows the $\pT$ spectrum.
+It falls by about nine orders of magnitude from 0.5 to 50~GeV.
+The models differ in slope.
+Sibyll and DPMJET are harder than the data.
+In plain words, they make too many particles at high $\pT$.
+Sibyll reaches a ratio of 4.6 in the highest bin, and DPMJET up to 1.35.
+QGSJET II-04 is softer, with ratios down to 0.18.
+Angantyr stays between 0.71 and 1.11.
+Its largest deviation is in the highest bins, which have large model errors.
+In the middle range (1 to 6~GeV), Sibyll, DPMJET and EPOS LHC-R dip to 0.77, 0.65 and 0.60.
+The hard tail depends on how a model treats hard scatterings.
+Angantyr uses perturbative QCD with multiparton interactions, which is a likely reason for its good tail.
+This is my interpretation and I did not test it.
+The statements match the ATLAS paper.
+It reports that Angantyr is within 12\,\%, that DPMJET and Sibyll are harder and that QGSJET is softer.
+
+\paragraph{Charged multiplicity.}
+Figure~\ref{fig:cmpnch} shows the multiplicity distribution.
+At low $\nch$ the models spread by a factor of about 2.4.
+At $\nch=1$ the ratio MC/data is 0.55 for DPMJET and 1.3 for EPOS LHC-R.
+Around $\nch=30$ all models agree within about 20\,\%.
+The high-multiplicity tail ($\nch>100$) shows large differences.
+Angantyr falls far below the data (ratio 0.03 in the last bin).
+QGSJET II-04 is up to a factor 13 too high.
+QGSJET III is a factor of about 2 too high in the last bin.
+Between $\nch\approx60$ and 120, DPMJET and EPOS LHC-R are 35 to 55\,\% low.
+In the last bin they come within about 15\,\% of the data.
+A large multiplicity means many nucleon--nucleon collisions at a small impact parameter.
+The tail is therefore sensitive to the nuclear geometry and to fluctuations in the number of struck nucleons.
+The ATLAS paper says that DPMJET and EPOS are within 30\,\% of the data at the highest multiplicities.
+In my plot this holds for the last bin only.
+The paper also says that QGSJET III is too high by an order of magnitude.
+My value is a factor of 2.
+My QGSJET III sample is small (0.23 million events), but the tail bins hold at least 10 events.
+I do not know the cause of this difference.
+
+\paragraph{Mean transverse momentum.}
+Figure~\ref{fig:cmpmpt} shows $\langle\pT\rangle$ against $\nch$.
+All models stay within a few percent of the data over most of the range.
+The ratio is 0.92 to 0.99 for Angantyr, 0.92 to 1.01 for EPOS LHC-R and 0.92 to 1.02 for DPMJET.
+QGSJET II-04 and QGSJET III vary more (0.87 to 1.19).
+This agrees with the ATLAS statement that Angantyr, DPMJET and EPOS follow the shape within 5\,\% for $\nch>50$.
+
+\begin{figure}[!htbp]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m4_compare_nch.pdf}
+\caption{Multiplicity distribution.}
+\label{fig:cmpnch}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\includegraphics[width=\textwidth]{figures/m4_compare_meanpt.pdf}
+\caption{Mean $\pT$ versus $\nch$.}
+\label{fig:cmpmpt}
+\end{subfigure}
+\caption{ATLAS p+O data at 9.62~TeV and generator predictions at particle level, as in Fig.~\ref{fig:cmp1}.}
+\label{fig:cmp2}
+\end{figure}
+
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Ratio MC/data over all bins where the model has at least 10 entries: minimum to maximum, with the median in brackets.}
+\label{tab:cmpsum}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Model & $\eta$ & $\pT$ & $\nch$ & $\langle\pT\rangle$\\
+\midrule
+Pythia 8 Angantyr & 0.98--1.02 (0.98) & 0.71--1.11 (0.91) & 0.03--1.21 (1.03) & 0.92--0.99 (0.98)\\
+EPOS LHC-R & 0.71--0.75 (0.72) & 0.60--1.14 (0.64) & 0.42--1.49 (0.64) & 0.92--1.01 (0.99)\\
+DPMJET-III 2019.1 & 0.91--0.92 (0.91) & 0.65--1.35 (1.00) & 0.53--1.35 (0.84) & 0.92--1.02 (0.97)\\
+QGSJET II-04 & 1.24--1.27 (1.25) & 0.18--1.43 (1.17) & 0.66--13.4 (0.94) & 0.87--1.18 (0.97)\\
+QGSJET III & 1.04--1.09 (1.05) & 0.77--1.40 (1.05) & 0.86--2.00 (0.98) & 0.89--1.19 (0.98)\\
+Sibyll 2.3e & 0.88--0.98 (0.94) & 0.77--4.63 (0.93) & 0.51--1.31 (0.89) & 0.91--1.05 (0.96)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Summary of the comparison.}
+Table~\ref{tab:cmpsum} gives the ranges.
+For $\eta$, only Angantyr is within a few percent of the data.
+For $\langle\pT\rangle$, several models are.
+No model describes all four observables.
+Angantyr fails in the multiplicity tail.
+Sibyll fails in the $\pT$ tail.
+QGSJET II-04 is off in normalisation.
+Most statements of the ATLAS paper are reproduced.
+The exceptions are listed in Section~\ref{sec:limits}.
+I take this as evidence that my particle definition, frame treatment and rebinning are correct.
+The same tools can now be used for the next step, the forward \pizero.
+
+%=====================================================================
+\section{Limitations}
+\label{sec:limits}
+%=====================================================================
+\begin{itemize}
+  \item The study is at generator level. It has no LHCf acceptance, resolution or reconstruction.
+  \item The generator versions in Chromo are not identical to CRMC 2.2.1 and Pythia 8.308 of the ATLAS paper. This probably explains the small acceptance offsets and the Sibyll deviation at the edge of the $\eta$ distribution.
+  \item Three details differ from the ATLAS paper: the QGSJET III multiplicity tail (factor 2 against ``an order of magnitude''), the shape of EPOS LHC-R in $\eta$, and the range of $\nch$ where DPMJET and EPOS LHC-R are within 30\,\% of the data.
+  \item The Pythia forward tune is the Monash-based set. The main tune of Fieg et al.\ and the ATLAS A3 tune are not included.
+  \item The slow models (EPOS, QGSJET III) have small event counts. Their single $\xi>0.7$ rates have 5 to 15\,\% errors (ratios up to 19\,\%), and their tails are sparse.
+  \item HIJING is not available in Chromo, so I compare six of the seven models of the ATLAS paper.
+  \item There is no covariance matrix for the data. I show ratios, not $\chi^{2}$.
+  \item The LHC lab-frame window for p+O is my estimate (Section~\ref{sec:window}).
+  \item The statement that nuclear energy loss lowers the rate of energetic pions is a simple picture. I did not test it.
+\end{itemize}
+
+%=====================================================================
+\section{Conclusions and outlook}
+%=====================================================================
+I started with two simple questions.
+Where are the pions that make a shower look like a gamma-ray shower?
+Do the generators agree on them?
+Kinematics gives a clear answer for the first part.
+The pions with at least 70\,\% of the beam energy sit in a pseudorapidity window of width 2.77.
+At LHC energies this window starts between $\eta\approx8.1$ and 8.8, close to the LHCf edge at 8.4.
+My reproduction of the pp results of Leitgeb et al.\ works.
+The window formulas are the same as theirs.
+The spectra show the features they describe, such as the sharp low-energy edge.
+My own frame check is clean.
+
+The generators do not agree on the second part.
+Only about one inelastic collision in 1000 makes a pion with $\xi>0.7$.
+The generators differ on this rate by a factor of 3 to 5 in pp.
+In p+O at 9.62~TeV the factor is about 9.
+The generators even disagree on whether the rate goes up or down from pp.
+So the pion rate that matters for the gamma-ray background is the least certain exactly where a nuclear target enters.
+The ATLAS data cannot settle this directly, because they cover $|\eta|<2.5$ and the pions of interest are at $\eta>8.4$.
+They do test the generators in the central region.
+There, only Angantyr describes the $\eta$ distribution within a few percent, and no generator describes all four observables.
+My comparison with these data reproduces most of what the ATLAS paper reports.
+This tells me that my definitions, frame conventions and analysis chain are sound.
+
+The next steps follow from this.
+First, the forward \pizero\ must be treated like LHCf treats it.
+I would add the LHCf acceptance and a simple detector response to the generator output \cite{LHCf:2012pi0}.
+I would then rebuild the pion from two photons with Eq.~\eqref{eq:mgg}, fit the mass peak and subtract the background with sidebands.
+A closure test of the unfolding on this toy sample would show how well the true spectrum is recovered.
+Second, I would move the observables from the CM frame to the LHC frame, for the proton-side and the oxygen-side detector.
+This also puts my window estimate of Section~\ref{sec:window} to a real test.
+Third, the ATLAS data can compare tunes of one generator.
+One example is the Pythia forward tune \cite{Fieg:2024tune} together with Angantyr.
+Finally, the slow generators need more events to reach $\xi>0.7$ with a few percent error.
+I would be glad to continue this work.
+
+\paragraph{Acknowledgements.}
+I used the KEKCC computing system through my Belle~II account.
+I thank the developers of Chromo and of all the generators.
+
+%=====================================================================
+\appendix
+\section{ATLAS data tables}
+\label{app:hepdata}
+%=====================================================================
+I used the HEPData record of the ATLAS measurement \cite{ATLAS:hepdata} (version 1, CSV format).
+\begin{center}
+\small
+\begin{tabular}{@{}llp{7.2cm}@{}}
+\toprule
+Table & Figure in the paper & Content and binning\\
+\midrule
+1 & 2a & $(1/N_{\mathrm{ev}})\,\dd N_{\mathrm{ev}}/\dd\nch$; $\nch=1$ to 80 in steps of 1, then wider bins up to 200.5\\
+2 & 2b & $(1/N_{\mathrm{ev}})(1/2\pi\pT)\,\dd^{2}N_{\mathrm{ch}}/\dd\eta\,\dd\pT$; 25 bins from 0.5 to 50~GeV\\
+3 & 2c & $\langle\pT\rangle$ against $\nch$; same $\nch$ bins as Table~1\\
+4 & 2d & $(1/N_{\mathrm{ev}})\,\dd N_{\mathrm{ch}}/\dd\eta$; 100 bins of width 0.1 from $-2.5$ to 2.5\\
+\bottomrule
+\end{tabular}
+\end{center}
+Each table has statistical and systematic uncertainties, both asymmetric.
+
+%=====================================================================
+\section*{Code and data availability}
+%=====================================================================
+All scripts, merged histograms, tables, logs and figures of this study are in a public GitHub repository: \href{https://github.com/tejasrana973/forward-pi0-pO-generators}{github.com/tejasrana973/forward-pi0-pO-generators}.
+The repository also lists the software versions, and the random seeds are set in the batch scripts.
+The ATLAS data are public on HEPData \cite{ATLAS:hepdata}.
+The four tables I used are included in the repository.
+
+{\small
+\bibliographystyle{unsrt}
+\bibliography{references}}
+
+\end{document}
