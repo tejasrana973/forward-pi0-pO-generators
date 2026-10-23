@@ -22,3 +22,5 @@ note/*.blg
 note/*.out
 note/*.toc
 note/*.synctex.gz
+note/*.fls
+note/*.fdb_latexmk
