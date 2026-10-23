@@ -1,0 +1,42 @@
+Data: integral of dN/deta (Table 4) = 24.98 charged particles per event; Table 2 integral gives 24.93; Table 1 normalisation = 0.9999
+
+model                  events    <n_ch>   vs data         A
+Pythia8Angantyr       2400000     24.71     -1.1%    0.9188
+EposLHCR               471400     18.07    -27.7%    0.8379
+DpmjetIII191          2000000     22.84     -8.6%    0.9694
+QGSJetII04            1600000     31.29    +25.3%    0.8989
+QGSJetIII              225450     26.30     +5.3%    0.9033
+Sibyll23e             4000000     23.35     -6.5%    0.9247
+saved m4_compare_eta.png / .pdf
+saved m4_compare_pt.png / .pdf
+saved m4_compare_nch.png / .pdf
+saved m4_compare_meanpt.png / .pdf
+
+=== MC / data summary (bins where the model has >= 10 entries) ===
+observ.  model                bins       min       max    median    inside band
+eta      Pythia 8 Angantyr      50      0.98      1.02      0.98            82%
+eta      EPOS LHC-R             50      0.71      0.75      0.72             0%
+eta      DPMJET-III 2019.1      50      0.91      0.92      0.91             0%
+eta      QGSJET II-04           50      1.24      1.27      1.25             0%
+eta      QGSJET III             50      1.04      1.09      1.05             0%
+eta      Sibyll 2.3e            50      0.88      0.98      0.94             2%
+pt       Pythia 8 Angantyr      25      0.71      1.11      0.91             4%
+pt       EPOS LHC-R             25      0.60      1.14      0.64            12%
+pt       DPMJET-III 2019.1      25      0.65      1.35      1.00            12%
+pt       QGSJET II-04           25      0.18      1.43      1.17             0%
+pt       QGSJET III             24      0.77      1.40      1.05             4%
+pt       Sibyll 2.3e            25      0.77      4.63      0.93            12%
+nch      Pythia 8 Angantyr      82      0.03      1.21      1.03             6%
+nch      EPOS LHC-R             82      0.42      1.49      0.64             2%
+nch      DPMJET-III 2019.1      82      0.53      1.35      0.84             5%
+nch      QGSJET II-04           82      0.66     13.43      0.94             4%
+nch      QGSJET III             82      0.86      2.00      0.98            16%
+nch      Sibyll 2.3e            82      0.51      1.31      0.89            16%
+meanpt   Pythia 8 Angantyr      82      0.92      0.99      0.98             0%
+meanpt   EPOS LHC-R             82      0.92      1.01      0.99            17%
+meanpt   DPMJET-III 2019.1      82      0.92      1.02      0.97             4%
+meanpt   QGSJET II-04           82      0.87      1.18      0.97             2%
+meanpt   QGSJET III             82      0.89      1.19      0.98             1%
+meanpt   Sibyll 2.3e            82      0.91      1.05      0.96             4%
+
+saved m4_compare.csv

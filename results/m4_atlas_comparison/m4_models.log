@@ -1,0 +1,21 @@
+=== Fiducial acceptance A = N(sel)/N(generated) vs the value quoted in the ATLAS paper ===
+model                  events  A (ours)       +- A (ATLAS)     pull
+Pythia8Angantyr       2400000    0.9188   0.0002     0.891    157.7
+EposLHCR               471400    0.8379   0.0005     0.842     -7.6
+DpmjetIII191          2000000    0.9694   0.0001     0.959     85.7
+QGSJetII04            1600000    0.8989   0.0002     0.899     -0.6
+QGSJetIII              225450    0.9033   0.0006         -        -
+Sibyll23e             4000000    0.9247   0.0001     0.925     -2.0
+(a pull of a few units can come from a different generator version or tune than ATLAS used; the quoted A has no uncertainty)
+
+=== Mean charged multiplicity per selected event and lepton share (e, mu among primaries) ===
+Pythia8Angantyr    <n_ch>= 24.71  lepton share=0.313 %   max |eta density change| without leptons: 0.33 %
+EposLHCR           <n_ch>= 18.07  lepton share=0.337 %   max |eta density change| without leptons: 0.40 %
+DpmjetIII191       <n_ch>= 22.84  lepton share=0.230 %   max |eta density change| without leptons: 0.25 %
+QGSJetII04         <n_ch>= 31.29  lepton share=0.185 %   max |eta density change| without leptons: 0.20 %
+QGSJetIII          <n_ch>= 26.30  lepton share=0.157 %   max |eta density change| without leptons: 0.18 %
+Sibyll23e          <n_ch>= 23.35  lepton share=0.195 %   max |eta density change| without leptons: 0.21 %
+saved m4_models_eta.png / .pdf
+saved m4_models_pt.png / .pdf
+saved m4_models_nch.png / .pdf
+saved m4_models_meanpt.png / .pdf

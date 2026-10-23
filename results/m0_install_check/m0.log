@@ -1,0 +1,19 @@
+=== TEST 1: p + p, E_lab = 1 TeV (sqrt(s) = 43.34 GeV) ===
+expected: sum(E) = 1000.94 GeV, sum(pz) = 1000.00 GeV (to ~0.1 GeV)
+model         pi0/evt     sum(E)    sum(pz)    max E_pi0   t [s]
+EposLHC          5.00    1001.03    1000.09        521.6     2.3
+QGSJetII04       4.89    1000.93     999.99        567.4    49.3
+Sibyll23d        5.42    1000.94    1000.00        579.4     0.7
+Pythia8          5.65    1000.94    1000.00        599.7     1.3
+
+=== TEST 2: p + 16O, sqrt(s_NN) = 9620 GeV (nucleon-nucleon CM frame) ===
+model             pi0/evt   t [s]
+EposLHC              55.1    15.5
+EposLHCR             49.7    14.2
+QGSJetII04           78.1     7.0
+QGSJetIII            71.8    90.9
+Sibyll23d            57.6     0.8
+Sibyll23e            54.5     0.7
+Pythia8Angantyr      59.5     7.2
+
+M0 done.

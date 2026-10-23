@@ -1,0 +1,9 @@
+model,system,events,sigma_inel_mb,P_evt_xi_gt_0.7,err,N_pi0_xi_gt_0.7,frac_in_window,err,frac_below,frac_above
+EposLHC,lab 1000 GeV (none) fwd-only,1200000,34.892,1.0525e-03,3.0e-05,1263,0.9422,0.0066,0.0214,0.0364
+Pythia8-fwd,lab 1000 GeV (none) fwd-only,2000000,34.421,5.6400e-04,1.7e-05,1128,0.9619,0.0057,0.0062,0.0319
+Pythia8,lab 1000 GeV (none) fwd-only,2000000,34.421,1.3675e-03,2.6e-05,2735,0.9276,0.0050,0.0044,0.0680
+QGSJetII04,lab 1000 GeV (none) fwd-only,2000000,35.289,4.6400e-04,1.5e-05,928,0.8836,0.0105,0.0065,0.1099
+Sibyll23d,cm 13600 GeV (max) fwd-only,2000000,80.404,2.1605e-03,3.3e-05,4321,0.9637,0.0028,0.0083,0.0280
+Sibyll23d,cm 43.3394 GeV (max) fwd-only,2000000,34.565,1.7095e-03,2.9e-05,3419,0.9591,0.0034,0.0006,0.0404
+Sibyll23d,cm 43.3394 GeV (plus) fwd-only,1000000,34.565,7.8900e-04,2.8e-05,789,0.9721,0.0059,0.0000,0.0279
+Sibyll23d,lab 1000 GeV (none) fwd-only,2000000,34.565,8.4000e-04,2.0e-05,1680,0.9649,0.0045,0.0024,0.0327

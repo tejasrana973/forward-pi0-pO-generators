@@ -1,0 +1,23 @@
+model        system                            events sig_inel    P(max xi_pi0>0.7)   N(pi0)    in eta window    below    above
+EposLHC      lab 1000 GeV (none) fwd-only     1200000    34.89    1.053e-03 +-3.0e-05     1263     94.22 +-0.66 %    2.14%    3.64%
+Pythia8-fwd  lab 1000 GeV (none) fwd-only     2000000    34.42    5.640e-04 +-1.7e-05     1128     96.19 +-0.57 %    0.62%    3.19%
+Pythia8      lab 1000 GeV (none) fwd-only     2000000    34.42    1.368e-03 +-2.6e-05     2735     92.76 +-0.50 %    0.44%    6.80%
+QGSJetII04   lab 1000 GeV (none) fwd-only     2000000    35.29    4.640e-04 +-1.5e-05      928     88.36 +-1.05 %    0.65%   10.99%
+Sibyll23d    cm 13600 GeV (max) fwd-only      2000000    80.40    2.161e-03 +-3.3e-05     4321     96.37 +-0.28 %    0.83%    2.80%
+Sibyll23d    cm 43.3394 GeV (max) fwd-only    2000000    34.57    1.710e-03 +-2.9e-05     3419     95.91 +-0.34 %    0.06%    4.04%
+Sibyll23d    cm 43.3394 GeV (plus) fwd-only   1000000    34.57    7.890e-04 +-2.8e-05      789     97.21 +-0.59 %    0.00%    2.79%
+Sibyll23d    lab 1000 GeV (none) fwd-only     2000000    34.57    8.400e-04 +-2.0e-05     1680     96.49 +-0.45 %    0.24%    3.27%
+(N(pi0), window columns: pi0 with xi>0.7;  below = |eta| < eta_min,  above = |eta| > eta_max)
+
+P(event has a pi0 above xi = threshold):
+model        system                               0.1       0.2       0.3       0.4       0.5       0.6       0.7       0.8       0.9
+EposLHC      lab 1000 GeV (none) fwd-only    3.21e-01  1.23e-01  4.96e-02  2.10e-02  8.25e-03  3.10e-03  1.05e-03  3.06e-04  7.50e-05
+Pythia8-fwd  lab 1000 GeV (none) fwd-only    3.21e-01  1.08e-01  3.96e-02  1.50e-02  5.64e-03  1.95e-03  5.64e-04  1.11e-04  1.80e-05
+Pythia8      lab 1000 GeV (none) fwd-only    3.39e-01  1.25e-01  5.05e-02  2.15e-02  9.31e-03  3.87e-03  1.37e-03  3.08e-04  1.50e-05
+QGSJetII04   lab 1000 GeV (none) fwd-only    2.91e-01  1.04e-01  3.96e-02  1.55e-02  5.77e-03  1.75e-03  4.64e-04  7.55e-05  3.50e-06
+Sibyll23d    cm 13600 GeV (max) fwd-only     4.59e-01  1.95e-01  8.95e-02  4.31e-02  2.00e-02  7.96e-03  2.16e-03  1.95e-04  4.00e-06
+Sibyll23d    cm 43.3394 GeV (max) fwd-only   5.13e-01  2.23e-01  1.03e-01  4.83e-02  2.06e-02  7.37e-03  1.71e-03  1.81e-04  4.00e-06
+Sibyll23d    cm 43.3394 GeV (plus) fwd-only  2.97e-01  1.17e-01  5.23e-02  2.44e-02  1.03e-02  3.62e-03  7.89e-04  7.40e-05  1.00e-06
+Sibyll23d    lab 1000 GeV (none) fwd-only    2.96e-01  1.17e-01  5.23e-02  2.42e-02  1.03e-02  3.62e-03  8.40e-04  8.30e-05  3.50e-06
+
+saved m2_table.csv and m2_table.tex

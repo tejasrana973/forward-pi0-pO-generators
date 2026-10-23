@@ -1,0 +1,5 @@
+# Tested with Python 3.9
+chromo==0.11.0
+numpy==2.0.2
+scipy==1.13.1
+matplotlib==3.9.4

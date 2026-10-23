@@ -1,0 +1,40 @@
+
+=== PART A: eta window for xi >= 0.70, pT < 1.5 GeV ===
+system                                sqrt(s)   eta_min   eta_max
+1 TeV p on p at rest                     43.3      3.00      5.77
+pp 7 TeV                               7000.0      8.09     10.86
+pp 13 TeV                             13000.0      8.71     11.48
+pp 13.6 TeV                           13600.0      8.75     11.52
+pO 9.62 TeV (per nucleon pair)         9620.0      8.41     11.17
+Paper numbers to compare (1 TeV fixed target and 13.6 TeV):
+   43.3 GeV : 3.0 < |eta| < 5.77        13.6 TeV : 8.75 < |eta| < 11.5
+-> asserts passed: formulas reproduce the quoted windows.
+saved m1_eta_window.png / .pdf
+
+=== PART B: Sibyll 2.3d cross-check, 100000 events, 1 TeV p on p ===
+pi0 total: 518564
+pi0 with xi >= 0.70 and pT < 1.5 GeV: 169
+inside the window, using pseudorapidity eta: 167 / 169
+inside the window, using true rapidity y   : 169 / 169
+(formulas are exact bounds on y; eta differs from y when pT is below ~m_pi0)
+largest xi found: 0.921
+fraction of events with a pi0 above xi_cut: see M2 (needs event-by-event bookkeeping)
+ ====================================================
+ |                                                  |
+ |                 S I B Y L L  2.3d                |
+ |                                                  |
+ |         HADRONIC INTERACTION MONTE CARLO         |
+ |                        BY                        |
+ |            Eun-Joo AHN, Felix RIEHN              |
+ |      R. ENGEL, A. FEDYNITCH, R.S. FLETCHER,      |
+ |       T.K. GAISSER, P. LIPARI, T. STANEV         |
+ |                                                  |
+ | Publication to be cited when using this program: |
+ | Eun-Joo AHN et al., Phys.Rev. D80 (2009) 094003  |
+ | F. RIEHN et al., hep-ph: 1912.03300              |
+ | last modifications: F. Riehn (05/20/2020)        |
+ ====================================================
+
+ SIG_AIR_INI: initializing target: (i,A)           1           0 air..
+ SIG_AIR_INI: initializing target: (i,A)           2          14 nit..
+ SIG_AIR_INI: initializing target: (i,A)           3          16 oxy..

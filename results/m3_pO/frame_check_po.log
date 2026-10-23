@@ -1,0 +1,5 @@
+events: lab 140000, cm 140000
+spectrum: 61 bins with > 20 entries, chi2/ndf = 0.95 (about 1 expected)
+P(max xi>0.1): lab 3.315e-01  cm 3.339e-01  difference -1.1 sigma
+P(max xi>0.5): lab 1.001e-02  cm 9.750e-03  difference 0.7 sigma
+P(max xi>0.7): lab 1.014e-03  cm 8.571e-04  difference 1.4 sigma

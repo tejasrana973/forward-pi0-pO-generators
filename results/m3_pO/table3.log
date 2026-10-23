@@ -1,0 +1,59 @@
+model            tgt  system            events sig_inel    P(max xi_pi0>0.7)   N(pi0)    in eta window
+EposLHCR         O16  cm9620            597250   465.11    6.982e-04 +-3.4e-05      417      90.9 +-1.4 %
+EposLHCR         p    cm9620            400000    73.33    7.625e-04 +-4.4e-05      305      90.2 +-1.7 %
+EposLHC          O16  cm9620            473850   489.24    7.281e-04 +-3.9e-05      345      90.4 +-1.6 %
+EposLHC          O16  lab1000           600000   307.86    7.217e-04 +-3.5e-05      433      93.3 +-1.2 %
+EposLHC          p    cm9620            400000    75.28    8.675e-04 +-4.7e-05      347      93.1 +-1.4 %
+EposLHC          p    lab1000          1000000    34.89    9.720e-04 +-3.1e-05      972      95.2 +-0.7 %
+Pythia8Angantyr  O16  cm9620            400000   467.36    7.625e-04 +-4.4e-05      305      88.9 +-1.8 %
+Pythia8Angantyr  O16  lab1000          1000000   297.63    9.980e-04 +-3.2e-05      998      93.4 +-0.8 %
+Pythia8          p    cm9620           1000000    74.57    1.101e-03 +-3.3e-05     1101      93.9 +-0.7 %
+Pythia8          p    lab1000          1000000    34.42    1.411e-03 +-3.8e-05     1411      94.0 +-0.6 %
+QGSJetII04       N14  cm9620            400000      nan    1.575e-04 +-2.0e-05       63      92.1 +-3.4 %
+QGSJetII04       N14  lab1000          1000000      nan    2.920e-04 +-1.7e-05      292      86.6 +-2.0 %
+QGSJetII04       O16  cm9620            400000      nan    1.150e-04 +-1.7e-05       46      93.5 +-3.6 %
+QGSJetII04       O16  lab1000          1000000      nan    3.300e-04 +-1.8e-05      330      88.2 +-1.8 %
+QGSJetII04       p    cm9620            400000    76.70    2.400e-04 +-2.4e-05       96      87.5 +-3.4 %
+QGSJetII04       p    lab1000          1000000    35.29    4.420e-04 +-2.1e-05      442      93.4 +-1.2 %
+QGSJetIII        O16  cm9620            163150      nan    3.555e-04 +-4.7e-05       58      82.8 +-5.0 %
+QGSJetIII        p    cm9620            400000    75.66    6.125e-04 +-3.9e-05      245      94.7 +-1.4 %
+Sibyll23d        N14  cm9620           1000000   461.88    1.014e-03 +-3.2e-05     1014      95.1 +-0.7 %
+Sibyll23d        N14  lab1000          1000000   297.65    9.030e-04 +-3.0e-05      903      94.7 +-0.7 %
+Sibyll23d        O16  cm9620           1000000   516.31    9.860e-04 +-3.1e-05      986      95.0 +-0.7 %
+Sibyll23d        O16  lab1000          1000000   336.19    9.030e-04 +-3.0e-05      903      94.4 +-0.8 %
+Sibyll23d        p    cm9620           1000000    76.34    1.063e-03 +-3.3e-05     1063      94.9 +-0.7 %
+Sibyll23d        p    lab1000          1000000    34.57    8.550e-04 +-2.9e-05      855      95.6 +-0.7 %
+Sibyll23e        O16  cm9620           1000000   516.31    1.031e-03 +-3.2e-05     1031      94.8 +-0.7 %
+Sibyll23e        p    cm9620           1000000    76.34    1.018e-03 +-3.2e-05     1018      96.6 +-0.6 %
+
+Ratios of P(event has a pi0 with xi > 0.5), with statistical errors:
+model            system                   p+O / pp          p+N / p+O
+EposLHC          cm9620               0.81 +- 0.02                  -
+EposLHC          lab1000              0.77 +- 0.01                  -
+EposLHCR         cm9620               0.93 +- 0.03                  -
+Pythia8Angantyr  cm9620               0.67 +- 0.02                  -
+Pythia8Angantyr  lab1000              0.77 +- 0.01                  -
+QGSJetII04       cm9620               0.77 +- 0.03       0.95 +- 0.04
+QGSJetII04       lab1000              0.79 +- 0.02       1.04 +- 0.02
+QGSJetIII        cm9620               0.74 +- 0.03                  -
+Sibyll23d        cm9620               0.76 +- 0.01       1.02 +- 0.02
+Sibyll23d        lab1000              0.94 +- 0.01       1.00 +- 0.01
+Sibyll23e        cm9620               0.79 +- 0.01                  -
+
+Ratios of P(event has a pi0 with xi > 0.7), with statistical errors:
+model            system                   p+O / pp          p+N / p+O
+EposLHC          cm9620               0.84 +- 0.06                  -
+EposLHC          lab1000              0.74 +- 0.04                  -
+EposLHCR         cm9620               0.92 +- 0.07                  -
+Pythia8Angantyr  cm9620               0.69 +- 0.04                  -
+Pythia8Angantyr  lab1000              0.71 +- 0.03                  -
+QGSJetII04       cm9620               0.48 +- 0.09       1.37 +- 0.27
+QGSJetII04       lab1000              0.75 +- 0.05       0.88 +- 0.07
+QGSJetIII        cm9620               0.58 +- 0.08                  -
+Sibyll23d        cm9620               0.93 +- 0.04       1.03 +- 0.05
+Sibyll23d        lab1000              1.06 +- 0.05       1.00 +- 0.05
+Sibyll23e        cm9620               1.01 +- 0.04                  -
+
+eta window for xi>0.7 at sqrt(s_NN)=9.62 TeV (NN-CM frame): 8.41 < eta < 11.17
+My estimate in the LHC lab frame (6.8 TeV p on 3.4 TeV/nucleon O, shift 0.35 toward the proton): 8.75 < eta < 11.52
+(to be re-checked in M4; LHCf acceptance starts at about eta = 8.4)

@@ -1,0 +1,24 @@
+# raw per-seed outputs and batch logs (merged results are stored in results/)
+out/
+out3/
+out4/
+logs/
+logs3/
+logs4/
+test_out*/
+fc3/
+*.part
+# python and editors
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+# LaTeX build files
+note/*.aux
+note/*.log
+note/*.bbl
+note/*.blg
+note/*.out
+note/*.toc
+note/*.synctex.gz
